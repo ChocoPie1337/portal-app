@@ -7,4 +7,6 @@ email-validator==2.0.0
 python-dotenv==1.0.0
 requests==2.31.0
 psycopg2-binary==2.9.9
-Werkzeug==2.3.8
+Flask-SocketIO==5.3.6
+python-socketio==5.10.0
+eventlet==0.33.3
