@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Мой Портал</title>
+    
+    <!-- CSS через url_for -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102,126,234,0.3);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+        
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .error-border {
+            border-color: #e74c3c !important;
+            background-color: #ffe6e6;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .requirements {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .requirements h4 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .requirements ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация через url_for -->
+    <nav>
+       <a href="{{ url_for('index') }}">Главная</a>
+       <a href="{{ url_for('about') }}">О нас</a>
+       <a href="{{ url_for('partners') }}">Партнёры</a>
+       <a href="{{ url_for('register') }}">Регистрация</a>
+       <a href="{{ url_for('contact') }}">Контакты</a>
+       <a href="{{ url_for('view_post', post_id=1) }}">Пост с лайками</a>
+    </nav>
+
+    <div class="container">
+        <h1>📝 Форма регистрации</h1>
+        <h2>Пожалуйста, заполните все поля правильно</h2>
+        
+        <div class="form-container">
+            <div class="requirements">
+                <h4>✅ Требования к заполнению:</h4>
+                <ul>
+                    <li>Имя и Фамилия: только буквы, первая заглавная</li>
+                    <li>Возраст: от 18 до 130 лет</li>
+                    <li>Телефон: маска +7 (XXX) XXX-XX-XX</li>
+                    <li>Email: корректный формат</li>
+                    <li>Логин: от 4 до 20 символов (латиница, цифры, _)</li>
+                    <li>Пароль: от 6 до 20 символов</li>
+                </ul>
+            </div>
+            
+            <div id="flashMessages"></div>
+            
+            <form id="registrationForm" novalidate>
+                <div class="form-group">
+                    <label for="firstName">Имя *</label>
+                    <input type="text" id="firstName" name="firstName" placeholder="Например: Иван">
+                    <span class="error-message" id="firstNameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Фамилия *</label>
+                    <input type="text" id="lastName" name="lastName" placeholder="Например: Петров">
+                    <span class="error-message" id="lastNameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="age">Возраст *</label>
+                    <input type="number" id="age" name="age" placeholder="18-130 лет">
+                    <span class="error-message" id="ageError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Телефон *</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+7 (999) 123-45-67">
+                    <span class="error-message" id="phoneError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" placeholder="ivan@example.com">
+                    <span class="error-message" id="emailError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login">Логин *</label>
+                    <input type="text" id="login" name="login" placeholder="4-20 символов латиницей">
+                    <span class="error-message" id="loginError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль *</label>
+                    <input type="password" id="password" name="password" placeholder="6-20 символов">
+                    <span class="error-message" id="passwordError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">Подтверждение пароля *</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword">
+                    <span class="error-message" id="confirmError"></span>
+                </div>
+                
+                <button type="submit" id="submitBtn">📝 Зарегистрироваться</button>
+            </form>
+            
+            <div id="formSuccess" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Мой Портал | Все поля формы проходят валидацию | <a href="{{ url_for('index') }}" style="color: white;">На главную</a></p>
+    </footer>
+    
+    <script>
+        const form = document.getElementById('registrationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        function validateName(name, fieldName) {
+            if (!name || name.trim() === '') {
+                return `${fieldName} обязательно для заполнения`;
+            }
+            
+            const lettersOnly = /^[A-Za-zА-Яа-яЁё\s-]+$/;
+            if (!lettersOnly.test(name)) {
+                return `${fieldName} может содержать только буквы, дефис и пробел`;
+            }
+            
+            const parts = name.trim().split(/[\s-]+/);
+            
+            for (let part of parts) {
+                if (part.length > 0) {
+                    const firstChar = part[0];
+                    const restChars = part.slice(1);
+                    
+                    if (firstChar !== firstChar.toUpperCase()) {
+                        return `${fieldName}: первая буква должна быть заглавной`;
+                    }
+                    
+                    if (restChars !== restChars.toLowerCase()) {
+                        return `${fieldName}: остальные буквы должны быть строчными`;
+                    }
+                }
+            }
+            
+            return '';
+        }
+        
+        function validateAge(age) {
+            if (!age || age === '') {
+                return 'Возраст обязателен для заполнения';
+            }
+            
+            const ageNum = Number(age);
+            if (isNaN(ageNum)) {
+                return 'Возраст должен быть числом';
+            }
+            
+            if (ageNum < 18) {
+                return 'Минимальный возраст: 18 лет';
+            }
+            
+            if (ageNum > 130) {
+                return 'Максимальный возраст: 130 лет';
+            }
+            
+            return '';
+        }
+        
+        function validatePhone(phone) {
+            if (!phone || phone.trim() === '') {
+                return 'Телефон обязателен для заполнения';
+            }
+            
+            const phoneRegex = /^\+7\s?\(?[0-9]{3}\)?\s?[0-9]{3}[-]?[0-9]{2}[-]?[0-9]{2}$/;
+            const digitsOnly = phone.replace(/\D/g, '');
+            
+            if (digitsOnly.length === 11 && (digitsOnly.startsWith('7') || digitsOnly.startsWith('8'))) {
+                return '';
+            }
+            
+            if (phoneRegex.test(phone)) {
+                return '';
+            }
+            
+            return 'Введите телефон в формате: +7 (XXX) XXX-XX-XX';
+        }
+        
+        function validateEmail(email) {
+            if (!email || email.trim() === '') {
+                return 'Email обязателен для заполнения';
+            }
+            
+            const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return 'Введите корректный email (например: name@domain.com)';
+            }
+            
+            return '';
+        }
+        
+        function validateLogin(login) {
+            if (!login || login.trim() === '') {
+                return 'Логин обязателен для заполнения';
+            }
+            
+            if (login.length < 4) {
+                return 'Минимальная длина логина: 4 символа';
+            }
+            
+            if (login.length > 20) {
+                return 'Максимальная длина логина: 20 символов';
+            }
+            
+            const loginRegex = /^[A-Za-z0-9_]+$/;
+            if (!loginRegex.test(login)) {
+                return 'Логин может содержать только латинские буквы, цифры и знак подчеркивания';
+            }
+            
+            return '';
+        }
+        
+        function validatePassword(password) {
+            if (!password) {
+                return 'Пароль обязателен для заполнения';
+            }
+            
+            if (password.length < 6) {
+                return 'Минимальная длина пароля: 6 символов';
+            }
+            
+            if (password.length > 20) {
+                return 'Максимальная длина пароля: 20 символов';
+            }
+            
+            return '';
+        }
+        
+        function validateConfirmPassword(password, confirm) {
+            if (!confirm) {
+                return 'Подтвердите пароль';
+            }
+            
+            if (password !== confirm) {
+                return 'Пароли не совпадают';
+            }
+            
+            return '';
+        }
+        
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const errorSpan = document.getElementById(errorId);
+            
+            if (message) {
+                errorSpan.textContent = message;
+                input.classList.add('error-border');
+            } else {
+                errorSpan.textContent = '';
+                input.classList.remove('error-border');
+            }
+        }
+        
+        function validateForm() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const age = document.getElementById('age').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            const firstNameError = validateName(firstName, 'Имя');
+            const lastNameError = validateName(lastName, 'Фамилия');
+            const ageError = validateAge(age);
+            const phoneError = validatePhone(phone);
+            const emailError = validateEmail(email);
+            const loginError = validateLogin(login);
+            const passwordError = validatePassword(password);
+            const confirmError = validateConfirmPassword(password, confirmPassword);
+            
+            showError('firstName', 'firstNameError', firstNameError);
+            showError('lastName', 'lastNameError', lastNameError);
+            showError('age', 'ageError', ageError);
+            showError('phone', 'phoneError', phoneError);
+            showError('email', 'emailError', emailError);
+            showError('login', 'loginError', loginError);
+            showError('password', 'passwordError', passwordError);
+            showError('confirmPassword', 'confirmError', confirmError);
+            
+            return !(firstNameError || lastNameError || ageError || phoneError || 
+                     emailError || loginError || passwordError || confirmError);
+        }
+        
+        // Автоформатирование телефона
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value;
+            const digits = value.replace(/\D/g, '');
+            
+            if (digits.length === 0) {
+                e.target.value = '+7';
+            } else if (digits.length <= 11) {
+                let formatted = '+7';
+                if (digits.length > 1) {
+                    formatted += ' (' + digits.substring(1, Math.min(4, digits.length));
+                }
+                if (digits.length > 4) {
+                    formatted += ') ' + digits.substring(4, Math.min(7, digits.length));
+                }
+                if (digits.length > 7) {
+                    formatted += '-' + digits.substring(7, Math.min(9, digits.length));
+                }
+                if (digits.length > 9) {
+                    formatted += '-' + digits.substring(9, Math.min(11, digits.length));
+                }
+                e.target.value = formatted;
+            }
+        });
+        
+        // Автоформатирование имени
+        document.getElementById('firstName').addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, '');
+            
+            if (value.length > 0) {
+                const words = value.split(/\s/);
+                const formatted = words.map(word => {
+                    if (word.length > 0) {
+                        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+                    }
+                    return word;
+                }).join(' ');
+                if (formatted !== value) {
+                    e.target.value = formatted;
+                } else {
+                    e.target.value = value;
+                }
+            }
+        });
+        
+        document.getElementById('lastName').addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, '');
+            
+            if (value.length > 0) {
+                const words = value.split(/\s/);
+                const formatted = words.map(word => {
+                    if (word.length > 0) {
+                        return word[0].toUpperCase() + word.slice(1).toLowerCase();
+                    }
+                    return word;
+                }).join(' ');
+                if (formatted !== value) {
+                    e.target.value = formatted;
+                } else {
+                    e.target.value = value;
+                }
+            }
+        });
+        
+        // Отправка формы на сервер (ИСПРАВЛЕННЫЙ КОД)
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                const firstError = document.querySelector('.error-border');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return;
+            }
+            
+            // Блокируем кнопку
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Отправка...';
+            
+            // ✅ ПРАВИЛЬНЫЕ ИМЕНА ПОЛЕЙ ДЛЯ СЕРВЕРА (snake_case)
+            const formData = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                age: parseInt(document.getElementById('age').value),
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                login: document.getElementById('login').value,
+                password: document.getElementById('password').value,
+                confirm_password: document.getElementById('confirmPassword').value
+            };
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    const successDiv = document.getElementById('formSuccess');
+                    successDiv.style.display = 'block';
+                    successDiv.innerHTML = `
+                        <div class="success-message">
+                            ✅ ${result.message}<br>
+                            Добро пожаловать, ${formData.first_name} ${formData.last_name}!<br>
+                            <small>Мы отправили подтверждение на ${formData.email}</small>
+                        </div>
+                    `;
+                    form.reset();
+                    setTimeout(() => {
+                        window.location.href = '/register/success';
+                    }, 2000);
+                } else {
+                    const errorMsg = result.errors || result.message || 'Ошибка регистрации';
+                    let errorHtml = '<div class="success-message" style="background: #e74c3c;">❌ Ошибка<br>';
+                    if (typeof errorMsg === 'object') {
+                        for (const [field, errors] of Object.entries(errorMsg)) {
+                            errorHtml += `${field}: ${errors.join(', ')}<br>`;
+                        }
+                    } else {
+                        errorHtml += errorMsg;
+                    }
+                    errorHtml += '</div>';
+                    
+                    const successDiv = document.getElementById('formSuccess');
+                    successDiv.style.display = 'block';
+                    successDiv.innerHTML = errorHtml;
+                    setTimeout(() => {
+                        successDiv.style.display = 'none';
+                    }, 5000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                const successDiv = document.getElementById('formSuccess');
+                successDiv.style.display = 'block';
+                successDiv.innerHTML = `
+                    <div class="success-message" style="background: #e74c3c;">
+                        ❌ Ошибка соединения с сервером. Попробуйте позже.
+                    </div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '📝 Зарегистрироваться';
+            }
+        });
+        
+        // Валидация при потере фокуса
+        const fields = ['firstName', 'lastName', 'age', 'phone', 'email', 'login', 'password', 'confirmPassword'];
+        fields.forEach(field => {
+            const el = document.getElementById(field);
+            if (el) {
+                el.addEventListener('blur', validateForm);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наши партнеры - Мой Портал</title>
+    
+    <!-- Подключаем CSS через url_for -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <style>
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .gallery-item {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .gallery-item:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 0;
+        }
+        
+        .gallery-item p {
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .inline-demo {
+            background: #e0f7fa;
+            padding: 20px;
+            border: 2px dashed #00838f;
+            margin: 20px 0;
+            border-radius: 12px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+        
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        footer a {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация через url_for для Flask -->
+    <nav>
+       <a href="{{ url_for('index') }}">Главная</a>
+       <a href="{{ url_for('about') }}">О нас</a>
+       <a href="{{ url_for('partners') }}">Партнёры</a>
+       <a href="{{ url_for('register') }}">Регистрация</a>
+       <a href="{{ url_for('contact') }}">Контакты</a>
+       <a href="{{ url_for('view_post', post_id=1) }}">Пост с лайками</a>
+    </nav>
+
+    <div class="container">
+    <h1>Наши партнеры</h1>
+    
+    <!-- Фотогалерея -->
+    <div class="card" id="photos">
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="{{ url_for('static', filename='images/20260324_0034_Логотип GIRS Service_remix_01kme9xvr0fvrvp38dn9bxd8xf.png') }}" alt="Гирс Сервис">
+                <p><em>Гирс Сервис</em></p>
+            </div>
+            <div class="gallery-item">
+                <img src="{{ url_for('static', filename='images/20260324_0033_Image Generation_remix_01kme9vssdeqj8h39bef7x5aje.png') }}" alt="РосГеология">
+                <p><strong>Росгеология</strong></p>
+            </div>
+            <div class="gallery-item">
+                <img src="{{ url_for('static', filename='images/20260324_0023_Image Generation_remix_01kme99qecfyzanvyfvvgd4xjt.png') }}" alt="Роснефть">
+                <p><em>Роснефть</em></p>
+            </div>
+            <div class="gallery-item">
+                <img src="{{ url_for('static', filename='images/20260324_0032_Image Generation_remix_01kme9rx9te679vfm6x66rhxe9.png') }}" alt="ОйлГазТет">
+                <p><strong>ОйлГазТет</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Видео -->
+    <div class="card" id="video">
+        <h3>🎥 Видеоконтент</h3>
+        <video width="100%" controls style="border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            <source src="{{ url_for('static', filename='videos/иконка_времени.mp4') }}" type="video/mp4">
+            Ваш браузер не поддерживает видео.
+        </video>
+        <p><strong>Пример видео</strong></p>
+    </div>
+        
+        <!-- Проекты со списками -->
+        <div class="card" id="projects">
+            <h3>🚀 Наши проекты</h3>
+            <ul>
+                <li><strong>Web-академия</strong> — курс по современной веб-разработке</li>
+                <li><strong>Data Science Hub</strong> — сообщество аналитиков данных</li>
+                <li><strong>Дизайн-студия</strong> — уроки графического дизайна</li>
+            </ul>
+            
+            <h4>Планы на следующий квартал:</h4>
+            <ol>
+                <li>Запуск мобильного приложения</li>
+                <li>Международный хакатон</li>
+                <li>Выпуск 10 новых курсов</li>
+            </ol>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Мой Портал | <a href="{{ url_for('index') }}">Вернуться на главную</a></p>
+    </footer>
+</body>
+</html>

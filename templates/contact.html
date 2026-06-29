@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обратная связь - Мой Портал</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <style>
+        .contact-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102,126,234,0.3);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: block;
+        }
+        
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .error-border {
+            border-color: #e74c3c !important;
+            background-color: #ffe6e6;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .info-note {
+            background: #e8eaf6;
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #3949ab;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+       <a href="{{ url_for('index') }}">Главная</a>
+       <a href="{{ url_for('about') }}">О нас</a>
+       <a href="{{ url_for('partners') }}">Партнёры</a>
+       <a href="{{ url_for('register') }}">Регистрация</a>
+       <a href="{{ url_for('contact') }}">Контакты</a>
+       <a href="{{ url_for('view_post', post_id=1) }}">Пост с лайками</a>
+    </nav>
+
+
+    <div class="container">
+        <h1>📬 Обратная связь</h1>
+        <h2>Напишите нам — мы свяжемся с вами в течении 24 часов!</h2>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Ваше имя *</label>
+                    <input type="text" id="name" name="name" placeholder="Иван Петров">
+                    <span class="error-message" id="nameError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" placeholder="ivan@example.com">
+                    <span class="error-message" id="emailError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Телефон (необязательно)</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+7 (999) 123-45-67">
+                    <span class="error-message" id="phoneError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Тема обращения *</label>
+                    <select id="subject" name="subject">
+                        <option value="">Выберите тему</option>
+                        <option value="question">📝 Вопрос по порталу</option>
+                        <option value="support">🛠 Техническая поддержка</option>
+                        <option value="cooperation">🤝 Сотрудничество</option>
+                        <option value="other">💡 Другое</option>
+                    </select>
+                    <span class="error-message" id="subjectError"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Сообщение *</label>
+                    <textarea id="message" name="message" placeholder="Опишите ваш вопрос или предложение..."></textarea>
+                    <span class="error-message" id="messageError"></span>
+                </div>
+                
+                <button type="submit" id="submitBtn">📨 Отправить сообщение</button>
+            </form>
+            
+            <div id="formResult" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Мой Портал | <a href="index.html" style="color: white;">На главную</a></p>
+    </footer>
+    
+    <script>
+        // === Конфигурация Telegram бота ===
+        // ВАЖНО: Замените на свои данные после создания бота!
+        const TELEGRAM_BOT_TOKEN = '8965984682:AAEvwcdbfn-I2zshLzTOsFzWg9-c7H2DQrA';  // Токен от @BotFather
+        const TELEGRAM_CHAT_ID = '1027204817';      // ID чата для уведомлений
+        
+        // === Вспомогательные функции ===
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const errorSpan = document.getElementById(errorId);
+            
+            if (message) {
+                errorSpan.textContent = message;
+                if (input) input.classList.add('error-border');
+            } else {
+                errorSpan.textContent = '';
+                if (input) input.classList.remove('error-border');
+            }
+        }
+        
+        function validateEmail(email) {
+            const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        function validatePhone(phone) {
+            if (!phone) return true;
+            const digits = phone.replace(/\D/g, '');
+            return digits.length === 11 && (digits.startsWith('7') || digits.startsWith('8'));
+        }
+        
+        // === Валидация формы ===
+        function validateForm() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value.trim();
+            
+            let isValid = true;
+            
+            if (!name) {
+                showError('name', 'nameError', 'Пожалуйста, укажите ваше имя');
+                isValid = false;
+            } else if (name.length < 2) {
+                showError('name', 'nameError', 'Имя должно содержать минимум 2 символа');
+                isValid = false;
+            } else {
+                showError('name', 'nameError', '');
+            }
+            
+            if (!email) {
+                showError('email', 'emailError', 'Пожалуйста, укажите email');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                showError('email', 'emailError', 'Введите корректный email (example@domain.com)');
+                isValid = false;
+            } else {
+                showError('email', 'emailError', '');
+            }
+            
+            if (phone && !validatePhone(phone)) {
+                showError('phone', 'phoneError', 'Введите корректный номер телефона');
+                isValid = false;
+            } else {
+                showError('phone', 'phoneError', '');
+            }
+            
+            if (!subject) {
+                showError('subject', 'subjectError', 'Выберите тему обращения');
+                isValid = false;
+            } else {
+                showError('subject', 'subjectError', '');
+            }
+            
+            if (!message) {
+                showError('message', 'messageError', 'Пожалуйста, напишите сообщение');
+                isValid = false;
+            } else if (message.length < 10) {
+                showError('message', 'messageError', 'Сообщение должно содержать минимум 10 символов');
+                isValid = false;
+            } else {
+                showError('message', 'messageError', '');
+            }
+            
+            return isValid;
+        }
+        
+        // === Отправка данных в Telegram ===
+        async function sendToTelegram(formData) {
+            const subjectMap = {
+                'question': '📝 Вопрос по порталу',
+                'support': '🛠 Техподдержка',
+                'cooperation': '🤝 Сотрудничество',
+                'other': '💡 Другое'
+            };
+            
+            // Форматируем сообщение для Telegram
+            const messageText = `
+📬 <b>НОВОЕ СООБЩЕНИЕ С ПОРТАЛА</b>
+━━━━━━━━━━━━━━━━━━━━━
+
+👤 <b>Отправитель:</b> ${escapeHtml(formData.name)}
+📧 <b>Email:</b> ${escapeHtml(formData.email)}
+${formData.phone ? `📞 <b>Телефон:</b> ${escapeHtml(formData.phone)}\n` : ''}
+🏷 <b>Тема:</b> ${subjectMap[formData.subject] || formData.subject}
+
+💬 <b>Сообщение:</b>
+${escapeHtml(formData.message)}
+
+━━━━━━━━━━━━━━━━━━━━━
+🕐 ${new Date().toLocaleString('ru-RU')}
+            `.trim();
+            
+            // Формируем запрос к Telegram Bot API
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            
+            const payload = {
+                chat_id: TELEGRAM_CHAT_ID,
+                text: messageText,
+                parse_mode: 'HTML',
+                disable_web_page_preview: true
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    console.error('Telegram API error:', result);
+                    throw new Error(result.description || 'Ошибка отправки в Telegram');
+                }
+                
+                return { success: true, result };
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Вспомогательная функция для экранирования HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // === Обработка отправки формы ===
+        const form = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('formResult');
+        
+        // Автоформатирование телефона
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value;
+            const digits = value.replace(/\D/g, '');
+            
+            if (digits.length === 0) {
+                e.target.value = '';
+            } else if (digits.length <= 11) {
+                let formatted = '+7';
+                if (digits.length > 1) {
+                    formatted += ' (' + digits.substring(1, Math.min(4, digits.length));
+                }
+                if (digits.length > 4) {
+                    formatted += ') ' + digits.substring(4, Math.min(7, digits.length));
+                }
+                if (digits.length > 7) {
+                    formatted += '-' + digits.substring(7, Math.min(9, digits.length));
+                }
+                if (digits.length > 9) {
+                    formatted += '-' + digits.substring(9, Math.min(11, digits.length));
+                }
+                e.target.value = formatted;
+            }
+        });
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                // Прокрутка к первой ошибке
+                const firstError = document.querySelector('.error-border');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return;
+            }
+            
+            // Блокируем кнопку и показываем загрузку
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Отправка...';
+            
+            // Скрываем предыдущий результат
+            resultDiv.style.display = 'none';
+            
+            // Собираем данные формы
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value.trim()
+            };
+            
+            // Отправляем в Telegram
+            const result = await sendToTelegram(formData);
+            
+            if (result.success) {
+                // Успех
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div class="success-message">
+                        ✅ <strong>Сообщение успешно отправлено!</strong><br>
+                        Спасибо, ${escapeHtml(formData.name)}! Администратор свяжется с вами в ближайшее время.
+                    </div>
+                `;
+                form.reset();
+                
+                // Скрыть сообщение через 5 секунд
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 5000);
+            } else {
+                // Ошибка
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px;">
+                        ❌ <strong>Ошибка отправки</strong><br>
+                        Не удалось отправить сообщение. Пожалуйста, попробуйте позже.<br>
+                        <small>${result.error || 'Неизвестная ошибка'}</small>
+                    </div>
+                `;
+            }
+            
+            // Разблокируем кнопку
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '📨 Отправить сообщение';
+        });
+        
+        // Валидация полей при потере фокуса
+        const fields = ['name', 'email', 'phone', 'subject', 'message'];
+        fields.forEach(field => {
+            const element = document.getElementById(field);
+            if (element) {
+                element.addEventListener('blur', validateForm);
+            }
+        });
+    </script>
+</body>
+</html>

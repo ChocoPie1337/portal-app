@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная - Мой Портал</title>
+    
+    <!-- Внешние стили -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Внутренние стили в header -->
+    <style>
+        .welcome-section {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+        }
+        
+        .feature-list li {
+            font-size: 1.1rem;
+        }
+        
+        .page-nav {
+            background: #e9ecef;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        
+        .page-nav a {
+            color: #667eea;
+            margin: 0 0.8rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .page-nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Навигация с использованием url_for для Flask -->
+    <nav>
+       <a href="{{ url_for('index') }}">Главная</a>
+       <a href="{{ url_for('about') }}">О нас</a>
+       <a href="{{ url_for('partners') }}">Партнёры</a>
+       <a href="{{ url_for('register') }}">Регистрация</a>
+       <a href="{{ url_for('contact') }}">Контакты</a>
+       <a href="{{ url_for('view_post', post_id=1) }}">Пост с лайками</a>
+    </nav>
+
+    <div class="container">
+        <!-- Заголовки h1-h3 -->
+        <div class="welcome-section">
+            <h1>Добро пожаловать на наш портал!</h1>
+            <h2>Место, где технологии встречаются с творчеством</h2>
+            <h3>Исследуйте, учитесь и вдохновляйтесь</h3>
+        </div>
+        
+        <!-- Навигация по странице (якоря) -->
+        <div class="page-nav">
+            <strong>📑 Навигация по странице:</strong>
+            <a href="#news">Новости</a> |
+            <a href="#features">Возможности</a> |
+            <a href="#top">↑ Наверх</a>
+        </div>
+        
+        <!-- Блок с inline стилем -->
+        <div class="card" id="news">
+            <h4 style="color: #764ba2; font-size: 1.8rem;">📰 Последние новости</h4>
+            <div>
+                <p>Вчера разработчик <span style="font-weight: bold;">очень вкусно покушал</span>, 
+                и все-таки запустил сайт в работу.</p>
+                <br>
+                <p><em>"Инновации меняют мир, а пиво поднимает настроение."</em> — сказал наш Технический Директор. 
+                <strong>Присоединяйтесь к нам сегодня!</strong></p>
+            </div>
+        </div>
+        
+        <div class="card" id="features">
+            <h4>🔧 Наши возможности</h4>
+            
+            <h5>Основные сервисы:</h5>
+            <ol>
+                <li>Интерактивные курсы</li>
+                <li>Форум сообщества</li>
+                <li>Библиотека ресурсов</li>
+                <li>Техническая поддержка 24/7</li>
+            </ol>
+            
+            <h5>Преимущества:</h5>
+            <ul class="feature-list">
+                <li>✅ Бесплатный доступ</li>
+                <li>✅ Сертификация после обучения</li>
+                <li>✅ Регулярные обновления</li>
+                <li>✅ Дружелюбное сообщество</li>
+            </ul>
+        </div>
+        
+        <!-- Якорные теги a на другие ресурсы -->
+        <div class="card">
+            <h4>🔗 Полезные ссылки</h4>
+            <p>
+                <a href="https://developer.mozilla.org/ru/" target="_blank">MDN Web Docs</a> | 
+                <a href="https://github.com/" target="_blank">GitHub</a> | 
+                <a href="https://www.w3schools.com/" target="_blank">W3Schools</a>
+            </p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Мой Портал | Все права защищены моей собачкой</p>
+        <a href="#top" style="color: white;">Вернуться наверх ↑</a>
+    </footer>
+
+    <!-- Дополнительный inline-стиль для демонстрации -->
+    <div style="text-align: center; padding: 10px; background: #f0f0f0; font-size: 12px;">
+        Сайт создан в учебных целях
+    </div>
+</body>
+</html>

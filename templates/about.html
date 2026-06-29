@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>О нас - Мой Портал</title>
+    
+    <!-- Внешние стили -->
+       <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Внутренние стили -->
+    <style>
+        .team-section {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .team-member {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            width: 200px;
+            bbox-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .team-member img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        h2 {
+            color: #667eea;
+            border-bottom: 3px solid #764ba2;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+       <a href="{{ url_for('index') }}">Главная</a>
+       <a href="{{ url_for('about') }}">О нас</a>
+       <a href="{{ url_for('partners') }}">Партнёры</a>
+       <a href="{{ url_for('register') }}">Регистрация</a>
+       <a href="{{ url_for('contact') }}">Контакты</a>
+       <a href="{{ url_for('view_post', post_id=1) }}">Пост с лайками</a>
+    </nav>
+
+
+    <div class="container">
+        <!-- Навигация по странице -->
+        <div class="page-nav">
+            <strong> На этой странице:</strong>
+            <a href="#mission">Миссия</a> |
+            <a href="#team">Команда</a> |
+            <a href="#values">Ценности</a>
+        </div>
+        
+        <!-- Заголовки h1-h6 -->
+        <h1>О нашем портале</h1>
+        <h2>Мы создаём цифровое пространство для всех</h2>
+        <h3>Наша история начинается с 2026 года</h3>
+        
+        <!-- Миссия - с inline стилем -->
+        <div class="card" id="mission">
+            <h4 style="color: #333; font-size: 1.5rem;"> Наша миссия</h4>
+            <p><strong>Сделать знания доступными</strong> для каждого человека независимо от <span style="background: #ffeb3b;">местоположения и опыта</span>.</p>
+            <br>
+            <p><em>«Образование — это самое мощное оружие, которое вы можете использовать, чтобы изменить мир»</em> — <strong>Нельсон Мандела</strong></p>
+        </div>
+        
+       <!-- Команда -->
+        <div class="card" id="team">
+            <h4>👥 Наша команда</h4>
+            <div class="team-section">
+                <div class="team-member">
+                    <img src="{{ url_for('static', filename='images/andrey.jpeg') }}" alt="Андрей">
+                    <p><strong>Полтавченко Андрей</strong></p>
+                    <p><em>Основатель</em></p>
+                </div>
+                <div class="team-member">
+                    <img src="{{ url_for('static', filename='images/pavel.jpeg') }}" alt="Павел">
+                    <p><strong>Павел Панов</strong></p>
+                    <p><em>Технический директор</em></p>
+                </div>
+                <div class="team-member">
+                    <img src="{{ url_for('static', filename='images/venya.jpeg') }}" alt="Веня">
+                    <p><strong>Мой кот Венеамин</strong></p>
+                    <p><em>Руководитель контента</em></p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ценности со списками -->
+        <div class="card" id="values">
+            <h4>💎 Наши ценности</h4>
+            <ul>
+                <li>🔹 <strong>Инновации</strong> — постоянное развитие и внедрение новых технологий</li>
+                <li>🔹 <strong>Доступность</strong> — качественное образование для всех</li>
+                <li>🔹 <strong>Сообщество</strong> — поддержка и взаимопомощь</li>
+                <li>🔹 <strong>Качество</strong> — только проверенный контент</li>
+            </ul>
+            
+            <h5>Наши достижения за 2026 год:</h5>
+            <ol>
+                <li>Запуск платформы — 1 активный пользователь(кот основателя)</li>
+                <li>50+ уникальных украденных курсов</li>
+                <li>Партнёрство с 0 образовательными центрами</li>
+                <li>Организация 3 онлайн-конференций (поиграли в CS2 через телемост)</li>
+            </ol>
+        </div>
+    
+    <footer>
+        <p>© 2026 Мой Портал | <a href="index.html" style="color: white;">На главную</a></p>
+    </footer>
+</body>
+</html>

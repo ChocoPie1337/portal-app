@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:15
+    container_name: portal_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: portal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  web:
+    build: .
+    container_name: portal_web
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/portal
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+    restart: always
+
+volumes:
+  postgres_data:
