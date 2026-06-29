@@ -1,74 +1,72 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
 from config import Config
-from models import db, User, FeedbackMessage
+from models import db, User, FeedbackMessage, Post
 from forms import RegistrationForm, ContactForm
 import requests
 from datetime import datetime
-from models import db, User, FeedbackMessage, Post
 from flask import Response, stream_with_context
 import time
 import json
+from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
 
-# Глобальный генератор событий (для простоты – используем очередь)
-# В реальном проекте лучше использовать Redis или базу данных.
-# Здесь мы просто храним последнее обновление и отправляем его всем подключённым клиентам.
-
-last_update = {
-    'post_id': None,
-    'likes_count': 0,
-    'timestamp': 0
-}
-
-@app.route('/stream')
-def stream():
-    def event_stream():
-        global last_update
-        last_sent = 0
-        while True:
-            # Проверяем, было ли обновление после последней отправки
-            if last_update['timestamp'] > last_sent:
-                data = {
-                    'post_id': last_update['post_id'],
-                    'likes_count': last_update['likes_count']
-                }
-                yield f"data: {json.dumps(data)}\n\n"
-                last_sent = last_update['timestamp']
-            time.sleep(0.5)  # небольшая задержка для экономии ресурсов
-    
-    return Response(stream_with_context(event_stream()), mimetype="text/event-stream")
-
-@app.route('/api/like/<int:post_id>', methods=['POST'])
-def like_post(post_id):
-    global last_update
-    post = Post.query.get_or_404(post_id)
-    post.likes_count += 1
-    db.session.commit()
-    
-    # Обновляем глобальное состояние для SSE
-    last_update['post_id'] = post_id
-    last_update['likes_count'] = post.likes_count
-    last_update['timestamp'] = int(time.time())
-    
-    return jsonify({
-        'success': True,
-        'post_id': post.id,
-        'likes_count': post.likes_count
-    })
-
-@app.route('/post/<int:post_id>')
-def view_post(post_id):
-    post = Post.query.get_or_404(post_id)
-    return render_template('post.html', post=post)
-
 # Flask-Migrate
 from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
+# Инициализация SocketIO
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+
+# ========== WEBSOCKET ==========
+
+@socketio.on('connect')
+def handle_connect():
+    print(f'🔌 Клиент подключился: {request.sid}')
+    emit('connected', {'message': 'Подключено к WebSocket!'})
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f'🔌 Клиент отключился: {request.sid}')
+
+@socketio.on('join_post')
+def handle_join_post(data):
+    post_id = data.get('post_id')
+    room = f'post_{post_id}'
+    join_room(room)
+    print(f'👤 Клиент {request.sid} присоединился к комнате {room}')
+    
+    post = Post.query.get(post_id)
+    if post:
+        emit('like_update', {
+            'post_id': post_id,
+            'likes_count': post.likes_count
+        }, room=request.sid)
+
+@socketio.on('like_post')
+def handle_like_post(data):
+    post_id = data.get('post_id')
+    room = f'post_{post_id}'
+    
+    post = Post.query.get(post_id)
+    if post:
+        post.likes_count += 1
+        db.session.commit()
+        
+        emit('like_update', {
+            'post_id': post_id,
+            'likes_count': post.likes_count
+        }, room=room)
+        print(f'❤️ Пост {post_id} получил лайк! Всего: {post.likes_count}')
+    else:
+        emit('error', {'message': 'Пост не найден'}, room=request.sid)
+
+
+# ========== TELEGRAM ==========
 
 def send_to_telegram(message_data):
     """Отправка уведомления в Telegram"""
@@ -109,6 +107,8 @@ def send_to_telegram(message_data):
         return False, str(e)
 
 
+# ========== СТРАНИЦЫ ==========
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -124,16 +124,21 @@ def partners():
     return render_template('partners.html')
 
 
+@app.route('/post/<int:post_id>')
+def view_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', post=post)
+
+
+# ========== РЕГИСТРАЦИЯ ==========
+
 @app.route('/api/register', methods=['POST'])
 def api_register():
     """API для регистрации через AJAX"""
     from forms import RegistrationForm
     from models import User
-    import json
     
     data = request.get_json()
-    
-    # Создаем форму с данными
     form = RegistrationForm(data=data)
     
     if form.validate():
@@ -151,7 +156,6 @@ def api_register():
             db.session.add(user)
             db.session.commit()
             
-            # Отправка в Telegram
             message_data = {
                 'name': f"{user.first_name} {user.last_name}",
                 'email': user.email,
@@ -174,6 +178,7 @@ def api_register():
             'errors': form.errors,
             'message': 'Пожалуйста, исправьте ошибки в форме'
         }), 400
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -210,6 +215,8 @@ def register_success():
     flash('Регистрация успешна!', 'success')
     return redirect(url_for('index'))
 
+
+# ========== ОБРАТНАЯ СВЯЗЬ ==========
 
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
@@ -258,6 +265,8 @@ def contact_success():
     return render_template('contact_success.html')
 
 
+# ========== API ==========
+
 @app.route('/api/users')
 def get_users():
     users = User.query.all()
@@ -292,15 +301,19 @@ def check_password_hash(user_id):
     })
 
 
+# ========== ЗАПУСК ==========
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-with app.app_context():
-    if not Post.query.first():
-        post = Post(
-            title="Первый пост",
-            content="Это тестовый пост для демонстрации лайков в реальном времени."
-        )
-        db.session.add(post)
-        db.session.commit()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+        # Создаём тестовый пост, если его нет
+        if not Post.query.first():
+            post = Post(
+                title="Первый пост",
+                content="Это тестовый пост для демонстрации лайков в реальном времени через WebSocket!"
+            )
+            db.session.add(post)
+            db.session.commit()
+            print("✅ Тестовый пост создан!")
+    
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
