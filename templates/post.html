@@ -40,6 +40,13 @@
         #likesDisplay {
             color: #e74c3c;
         }
+        .status {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+        .status.connected { color: #27ae60; }
+        .status.disconnected { color: #e74c3c; }
     </style>
 </head>
 <body>
@@ -60,50 +67,45 @@
                 <button class="like-btn" id="likeBtn">❤️ Лайк</button>
                 <span class="like-count">Количество лайков: <span id="likesDisplay">{{ post.likes_count }}</span></span>
             </div>
+            <div class="status" id="connectionStatus">⚪ Подключение...</div>
             <p><small>Создан: {{ post.created_at.strftime('%d.%m.%Y %H:%M') }}</small></p>
         </div>
     </div>
 
     <footer>
-        <p>© 2026 Мой Портал | Лайки в реальном времени</p>
+        <p>© 2026 Мой Портал | Лайки в реальном времени (WebSocket)</p>
     </footer>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const postId = {{ post.id }};
         const likesDisplay = document.getElementById('likesDisplay');
+        const statusEl = document.getElementById('connectionStatus');
 
-        // 1. Подключаемся к SSE-потоку
-        const eventSource = new EventSource('/stream');
+        const socket = io();
 
-        eventSource.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            // Если обновление относится к текущему посту – обновляем счётчик
+        socket.on('connect', function() {
+            statusEl.textContent = '🟢 Подключено к серверу';
+            statusEl.className = 'status connected';
+            socket.emit('join_post', { post_id: postId });
+        });
+
+        socket.on('disconnect', function() {
+            statusEl.textContent = '🔴 Отключено от сервера';
+            statusEl.className = 'status disconnected';
+        });
+
+        socket.on('like_update', function(data) {
             if (data.post_id === postId) {
                 likesDisplay.textContent = data.likes_count;
             }
-        };
+        });
 
-        eventSource.onerror = function() {
-            console.warn('SSE connection error, reconnecting...');
-            // EventSource автоматически переподключается
-        };
-
-        // 2. Обработчик клика по кнопке лайка
-        document.getElementById('likeBtn').addEventListener('click', async function() {
-            try {
-                const response = await fetch('/api/like/' + postId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    // Обновляем локально (на случай, если SSE немного задержится)
-                    likesDisplay.textContent = result.likes_count;
-                } else {
-                    alert('Ошибка при лайке');
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
+        document.getElementById('likeBtn').addEventListener('click', function() {
+            if (socket.connected) {
+                socket.emit('like_post', { post_id: postId });
+            } else {
+                alert('Нет соединения с сервером');
             }
         });
     </script>
